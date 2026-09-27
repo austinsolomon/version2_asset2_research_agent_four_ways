@@ -1,4 +1,4 @@
-# Repository 2 — Research agent with Claude
+# Repository 2 — Research agent built on the Claude Agent SDK
 
 **Phase 6 of Automation Academy.** You already ran Source → Enrich → Qualify →
 Outreach in Repository 1. Now zoom into one missing Enrich field: does the bakery
@@ -10,27 +10,42 @@ information so far. A **tool** is a function your program lets the model request
 A **skill** is saved instructions for a task. A skill can call this agent; these
 are different building blocks, not successive levels of autonomy.
 
+## The connection you already used in Outreach
+
+The Outreach tower introduced a tool request and a returned result. Repository 1
+then exposed its checked-email and meeting actions through a local MCP server.
+Here the same connection pattern serves research: `fetch_url` receives a page URL
+and returns text. The agent uses that text to choose whether another read is needed.
+
+`claude_agent_sdk/worker/research-tools.ts` defines the tools with `tool()` and
+`createSdkMcpServer()`. `run-research.ts` connects that server through
+`mcpServers`. Live search uses the SDK's built-in `WebSearch`; the offline replay
+uses the recorded `search_web` handler. MCP connects tools; the model and program
+determine the next action. Research does not automatically accept an answer,
+qualify the bakery or send a message.
+
 ## Start here: the free local rehearsal
 
 You need Node.js 22.6 or newer (`node --version`). Install it from nodejs.org if
-needed. Download the course ZIP and unzip it, or clone the private repository
-using the GitHub account that has been granted course access:
+needed. Download the ZIP from the course and unzip it, or use the personal copy
+command on your course account page. Both give you a folder called
+`research-agent-four-ways`; you do not need a GitHub account. From the folder
+that holds it, run:
 
 ```bash
-git clone https://github.com/austinsolomon/research-agent-four-ways.git
 cd research-agent-four-ways
 npm ci
 npm test
 npm run demo
 ```
 
-Run these commands from the root folder containing this README and package.json.
-`npm ci` downloads the pinned libraries once. After installation, `npm test` and
-`npm run demo` are offline and need no account or service key. Demo always chooses
-offline mode even if your computer already has provider credentials.
+The `cd` puts you in the root folder that contains this README and package.json;
+run the npm commands there. `npm ci` downloads the pinned libraries once. After
+installation, `npm test` and `npm run demo` are offline and need no account or
+service key. Demo always chooses offline mode even if your computer already has
+provider credentials.
 
-The historical repository URL stays the same so existing downloads keep working.
-The required learning path is now one Claude Agent SDK build. Vercel/OpenAI and
+The required learning path is one Claude Agent SDK build. Vercel/OpenAI and
 advanced hosting designs are optional references, described in `OPTIONAL.md`.
 
 ## What you should see
@@ -72,8 +87,9 @@ levels of infrastructure to complete your first agent.
 
 ## Connect the result to Repository 1
 
-Keep the two extracted repository folders next to each other. Run Repository 1's
-normal offline pipeline first, then from its root folder run:
+Keep the two repository folders, `leadgen-skills-pipeline` and
+`research-agent-four-ways`, next to each other. Run Repository 1's normal offline
+pipeline first, then from its root folder run:
 
 ```bash
 python3 -m pipeline.import_research --answers ../research-agent-four-ways/out/research_agent_answers.json
@@ -85,8 +101,8 @@ python3 -m pipeline.qualify --offline
 Use `py` instead of `python3` on Windows if that is your Python command. The import
 attaches evidence to unresolved records. It does not overwrite already checked
 values or approve its own answer. Read the source excerpt, then confirm it.
-Rye becomes the ninth qualified record; Dos Rios stays in review. The original
-baseline was 8 qualified, 13 rejected, 2 review → 7 emails → 4 deliveries →
+Rye becomes the tenth qualified record; Dos Rios stays in review. The current
+baseline is 9 qualified, 12 rejected, 2 review → 8 emails → 5 deliveries →
 2 replies → 1 confirmed meeting → 0 customers. Checking Rye does not send another
 email or create another meeting.
 
@@ -98,6 +114,14 @@ The SDK's live model/subprocess loop does **not** run. Therefore offline tests
 verify our surrounding code and data; they cannot prove live authentication or
 fresh model behavior. The fictional domains end in `.example` and cannot be
 researched on the live internet.
+
+## Getting updates
+
+If you used the copy command, open your course account page, get a fresh command
+for this repository and run the one under **Update my copy**, from the folder
+that holds `research-agent-four-ways`. It keeps your own changes. A plain
+`git pull` will not work, because your copy carries no access token. If you
+started from the ZIP, download the ZIP again.
 
 ## Optional: research a real bakery with the actual SDK
 
